@@ -11,14 +11,7 @@ import com.google.android.gms.wearable.WearableListenerService;
 
 public class WeatherDataListenerService extends WearableListenerService{
 
-    private final static String LOG_TAG = "WEARABLE SERVICE";
-
-    private static final String WEAR_DATE_KEY = "date";
-    private static final String WEAR_HIGH_TEMP_KEY = "high";
-    private static final String WEAR_LOW_TEMP_KEY = "low";
-    private static final String WEAR_WEATHER_IMAGE_KEY = "weather_image";
-    private static final String DATAMAP_KEY = "datamap";
-
+//    private final static String LOG_TAG = "WEARABLE SERVICE";
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {

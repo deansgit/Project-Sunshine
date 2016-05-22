@@ -5,16 +5,18 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.view.WatchViewStub;
+import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.Wearable;
 
 public class MainActivity extends Activity implements
@@ -22,18 +24,16 @@ public class MainActivity extends Activity implements
         GoogleApiClient.OnConnectionFailedListener{
 
     private static final String LOG_TAG = "WEARABLE ACTIVITY";
-    private TextView mTextView;
+    private TextView mDateTextView;
+    private ImageView mWeatherImageView;
+    private TextView mHighTextView;
+    private TextView mLowTextView;
     private GoogleApiClient mGoogleApiClient;
 
-    private static final String WEAR_DATE_KEY = "date";
+    private static final String WEAR_DATE_STRING_KEY = "date";
     private static final String WEAR_HIGH_TEMP_KEY = "high";
     private static final String WEAR_LOW_TEMP_KEY = "low";
     private static final String WEAR_WEATHER_IMAGE_KEY = "weather_image";
-
-    long mDate;
-    double mHigh;
-    double mLow;
-    Asset mWeatherImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +44,10 @@ public class MainActivity extends Activity implements
         stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
-                mTextView = (TextView) findViewById(R.id.date_text_view);
-                mTextView.setText(String.valueOf(mDate));
+                mDateTextView = (TextView) findViewById(R.id.date_text_view);
+                mWeatherImageView = (ImageView) findViewById(R.id.weather_image_view);
+                mHighTextView = (TextView) findViewById(R.id.high_text_view);
+                mLowTextView = (TextView) findViewById(R.id.low_text_view);
             }
         });
 
@@ -93,9 +95,21 @@ public class MainActivity extends Activity implements
         @Override
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
-            mDate = bundle.getLong(WEAR_DATE_KEY);
-            String dateString = String.valueOf(mDate);
-            mTextView.setText(dateString);
+            String high = bundle.getString(WEAR_HIGH_TEMP_KEY);
+            String low = bundle.getString(WEAR_LOW_TEMP_KEY);
+            int weatherId = bundle.getInt(WEAR_WEATHER_IMAGE_KEY);
+            int weatherResourceId = WearUtility.getIconResourceForWeatherCondition(weatherId);
+            Resources resources = getResources();
+
+            String mDate = bundle.getString(WEAR_DATE_STRING_KEY);
+
+            Log.d(LOG_TAG, "mDate (long) is: " + String.valueOf(mDate)
+                    + " and dateString is: " + mDate);
+            mDateTextView.setText(mDate);
+            //TODO fix this once we load in the images
+            mWeatherImageView.setImageDrawable(resources.getDrawable(weatherResourceId));
+            mHighTextView.setText(String.valueOf(high));
+            mLowTextView.setText(String.valueOf(low));
         }
     }
 

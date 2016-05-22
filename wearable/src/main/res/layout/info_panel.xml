@@ -12,8 +12,9 @@
 
     <TextView
         android:id="@+id/date_text_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,18 +24,19 @@
         android:gravity="center_horizontal">
 
         <ImageView
+            android:id="@+id/weather_image_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@mipmap/ic_launcher"/>
 
         <TextView
-            android:id="@+id/high"
+            android:id="@+id/high_text_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/temp_high" />
 
         <TextView
-            android:id="@+id/low"
+            android:id="@+id/low_text_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/temp_low" />

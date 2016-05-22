@@ -55,6 +55,15 @@ public class Utility {
         return String.format(context.getString(R.string.format_temperature), temperature);
     }
 
+    /**
+     * Helper method for formatting milliseconds returned by the DataListener to match format:
+     * EEE, MMM dd yyyy ==> 1463951241285 becomes "Sun, May 22 2016"
+     * */
+    public static String prettifyDate(long millis){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, MMM dd yyyy", Locale.getDefault());
+        return simpleDateFormat.format(millis);
+    }
+
     static String formatDate(long dateInMilliseconds) {
         Date date = new Date(dateInMilliseconds);
         return DateFormat.getDateInstance().format(date);

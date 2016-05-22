@@ -41,7 +41,6 @@ import com.example.android.sunshine.app.muzei.WeatherMuzeiSource;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.PutDataMapRequest;
@@ -53,7 +52,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -66,19 +64,19 @@ import java.util.concurrent.ExecutionException;
 
 public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener{
+        GoogleApiClient.OnConnectionFailedListener {
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
     public static final String ACTION_DATA_UPDATED =
             "com.example.android.sunshine.app.ACTION_DATA_UPDATED";
     // Interval at which to sync with the weather, in seconds.
     // 60 seconds (1 minute) * 180 = 3 hours
     public static final int SYNC_INTERVAL = 60 * 180;
-    public static final int SYNC_FLEXTIME = SYNC_INTERVAL/3;
+    public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
 
 
-    private static final String[] NOTIFY_WEATHER_PROJECTION = new String[] {
+    private static final String[] NOTIFY_WEATHER_PROJECTION = new String[]{
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
             WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
             WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
@@ -92,10 +90,10 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
     private static final int INDEX_SHORT_DESC = 3;
 
 
-
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_SERVER_INVALID,  LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID})
-    public @interface LocationStatus {}
+    @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_SERVER_INVALID, LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID})
+    public @interface LocationStatus {
+    }
 
     public static final int LOCATION_STATUS_OK = 0;
     public static final int LOCATION_STATUS_SERVER_DOWN = 1;
@@ -103,7 +101,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
     public static final int LOCATION_STATUS_UNKNOWN = 3;
     public static final int LOCATION_STATUS_INVALID = 4;
 
-    private static final String WEAR_DATE_KEY = "date";
+    private static final String WEAR_DATE_STRING_KEY = "date";
     private static final String WEAR_HIGH_TEMP_KEY = "high";
     private static final String WEAR_LOW_TEMP_KEY = "low";
     private static final String WEAR_WEATHER_IMAGE_KEY = "weather_image";
@@ -214,7 +212,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
     /**
      * Take the String representing the complete forecast in JSON Format and
      * pull out the data we need to construct the Strings needed for the wireframes.
-     *
+     * <p/>
      * Fortunately parsing is easy:  constructor takes the JSON string and converts it
      * into an Object hierarchy for us.
      */
@@ -260,7 +258,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
             JSONObject forecastJson = new JSONObject(forecastJsonStr);
 
             // do we have an error?
-            if ( forecastJson.has(OWM_MESSAGE_CODE) ) {
+            if (forecastJson.has(OWM_MESSAGE_CODE)) {
                 int errorCode = forecastJson.getInt(OWM_MESSAGE_CODE);
 
                 switch (errorCode) {
@@ -306,7 +304,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
             // now we work exclusively in UTC
             dayTime = new Time();
 
-            for(int i = 0; i < weatherArray.length(); i++) {
+            for (int i = 0; i < weatherArray.length(); i++) {
                 // These are the values that will be collected.
                 long dateTime;
                 double pressure;
@@ -324,7 +322,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
                 JSONObject dayForecast = weatherArray.getJSONObject(i);
 
                 // Cheating to convert this to UTC time, which is what we want anyhow
-                dateTime = dayTime.setJulianDay(julianStartDay+i);
+                dateTime = dayTime.setJulianDay(julianStartDay + i);
 
                 pressure = dayForecast.getDouble(OWM_PRESSURE);
                 humidity = dayForecast.getInt(OWM_HUMIDITY);
@@ -362,7 +360,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
 
             int inserted = 0;
             // add to database
-            if ( cVVector.size() > 0 ) {
+            if (cVVector.size() > 0) {
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
                 getContext().getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI, cvArray);
@@ -370,7 +368,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
                 // delete old data so we don't build up an endless history
                 getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                         WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
-                        new String[] {Long.toString(dayTime.setJulianDay(julianStartDay-1))});
+                        new String[]{Long.toString(dayTime.setJulianDay(julianStartDay - 1))});
 
                 updateWidgets();
                 updateMuzei();
@@ -413,7 +411,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
         boolean displayNotifications = prefs.getBoolean(displayNotificationsKey,
                 Boolean.parseBoolean(context.getString(R.string.pref_enable_notifications_default)));
 
-        if ( displayNotifications ) {
+        if (displayNotifications) {
 
             String lastNotificationKey = context.getString(R.string.pref_last_notification);
             long lastSync = prefs.getLong(lastNotificationKey, 0);
@@ -516,9 +514,9 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
      * Helper method to handle insertion of a new location in the weather database.
      *
      * @param locationSetting The location string used to request updates from the server.
-     * @param cityName A human-readable city name, e.g "Mountain View"
-     * @param lat the latitude of the city
-     * @param lon the longitude of the city
+     * @param cityName        A human-readable city name, e.g "Mountain View"
+     * @param lat             the latitude of the city
+     * @param lon             the longitude of the city
      * @return the row ID of the added location.
      */
     long addLocation(String locationSetting, String cityName, double lat, double lon) {
@@ -583,6 +581,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
 
     /**
      * Helper method to have the sync adapter sync immediately
+     *
      * @param context The context used to access the account service
      */
     public static void syncImmediately(Context context) {
@@ -611,7 +610,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
                 context.getString(R.string.app_name), context.getString(R.string.sync_account_type));
 
         // If the password doesn't exist, the account doesn't exist
-        if ( null == accountManager.getPassword(newAccount) ) {
+        if (null == accountManager.getPassword(newAccount)) {
 
         /*
          * Add the account and account type, no password or user data
@@ -656,10 +655,11 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
     /**
      * Sets the location status into shared preference.  This function should not be called from
      * the UI thread because it uses commit to write to the shared preferences.
-     * @param c Context to get the PreferenceManager from.
+     *
+     * @param c              Context to get the PreferenceManager from.
      * @param locationStatus The IntDef value to set
      */
-    static private void setLocationStatus(Context c, @LocationStatus int locationStatus){
+    static private void setLocationStatus(Context c, @LocationStatus int locationStatus) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
         SharedPreferences.Editor spe = sp.edit();
         spe.putInt(c.getString(R.string.pref_location_status_key), locationStatus);
@@ -677,9 +677,14 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
                 .query(weatherURI, NOTIFY_WEATHER_PROJECTION, null, null, null);
 
         if (cursor.moveToFirst()) {
-            dataMap.putLong(WEAR_DATE_KEY, date);
-            dataMap.putDouble(WEAR_HIGH_TEMP_KEY, cursor.getDouble(INDEX_MAX_TEMP));
-            dataMap.putDouble(WEAR_LOW_TEMP_KEY, cursor.getDouble(INDEX_MIN_TEMP));
+            String highString = Utility.formatTemperature(context, cursor.getDouble(INDEX_MAX_TEMP));
+            String lowString = Utility.formatTemperature(context, cursor.getDouble(INDEX_MIN_TEMP));
+
+            Log.d(LOG_TAG, highString + "  " + lowString);
+//            dataMap.putLong(WEAR_DATE_KEY, date);
+            dataMap.putString(WEAR_DATE_STRING_KEY, Utility.prettifyDate(date));
+            dataMap.putString(WEAR_HIGH_TEMP_KEY, highString);
+            dataMap.putString(WEAR_LOW_TEMP_KEY, lowString);
             dataMap.putInt(WEAR_WEATHER_IMAGE_KEY, cursor.getInt(INDEX_WEATHER_ID));
         }
         DataItemThread dataItemThread = new DataItemThread(context, dataMap);
@@ -690,22 +695,24 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
         Context mContext;
         DataMap mDataMap;
 
-        DataItemThread(Context context, DataMap data){
+        DataItemThread(Context context, DataMap data) {
             mContext = context;
             mDataMap = data;
         }
 
-        public void run(){
-            Bitmap weatherImage = BitmapFactory
-                    .decodeResource(mContext.getResources(),
-                            Utility.getArtResourceForWeatherCondition(mDataMap.getInt(WEAR_WEATHER_IMAGE_KEY)));
-            Asset weatherImgAsset = createAssetFromBitmap(weatherImage);
-            mDataMap.putAsset("BITMAP", weatherImgAsset); //test
+        public void run() {
+            //TODO do all of the calculations for dates on mobile side.
+//            Bitmap weatherImage = BitmapFactory
+//                    .decodeResource(mContext.getResources(),
+//                            Utility.getArtResourceForWeatherCondition(mDataMap.getInt(WEAR_WEATHER_IMAGE_KEY)));
+//            Asset weatherImgAsset = createAssetFromBitmap(weatherImage);
+//            mDataMap.putAsset("BITMAP", weatherImgAsset); //test
 
             PutDataMapRequest putDataMapRequest = PutDataMapRequest
                     .create(mContext.getString(R.string.weather_data_path));
             putDataMapRequest.getDataMap().putAll(mDataMap);
-            //add this to ensure data map always changes
+
+            //TODO: remove following line. added to ensure data map always changed
             putDataMapRequest.getDataMap().putLong("CURRENT_TIME_MILLIS", System.currentTimeMillis());
 
             PutDataRequest request = putDataMapRequest.asPutDataRequest();
@@ -713,9 +720,9 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                         @Override
                         public void onResult(@NonNull DataApi.DataItemResult dataItemResult) {
-                            if (!dataItemResult.getStatus().isSuccess()){
+                            if (!dataItemResult.getStatus().isSuccess()) {
                                 Log.e("SYNC DATAITEM", "failed to send data");
-                            }else{
+                            } else {
                                 Log.d("SYNC DATAITEM", "data item stored and ready to go out");
                             }
                         }
@@ -724,11 +731,11 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
 
     }
 
-    private static Asset createAssetFromBitmap(Bitmap bitmap) {
-        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-        return Asset.createFromBytes(byteStream.toByteArray());
-    }
+//    private static Asset createAssetFromBitmap(Bitmap bitmap) {
+//        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+//        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
+//        return Asset.createFromBytes(byteStream.toByteArray());
+//    }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
