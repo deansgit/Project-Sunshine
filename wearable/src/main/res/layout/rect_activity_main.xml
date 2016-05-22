@@ -9,6 +9,7 @@
     tools:deviceIds="wear_square">
 
     <include layout="@layout/info_panel"
+        android:id="@+id/info_panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"/>

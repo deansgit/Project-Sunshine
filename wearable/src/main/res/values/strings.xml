@@ -6,4 +6,7 @@
     <string name="my_digital_name">Sunshine Digital</string>
     <string name="temp_low">LOW</string>
     <string name="temp_high">HIGH</string>
+
+    <!--Path for data items -->
+    <string name="weather_data_path">/weather-data</string>
 </resources>
