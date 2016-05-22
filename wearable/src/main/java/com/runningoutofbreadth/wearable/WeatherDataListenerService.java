@@ -2,7 +2,6 @@ package com.runningoutofbreadth.wearable;
 
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
@@ -30,11 +29,7 @@ public class WeatherDataListenerService extends WearableListenerService{
                         dataEvent.getDataItem()).getDataMap();
                 String path = dataEvent.getDataItem().getUri().getPath();
                 if (path.equals(getString(R.string.weather_data_path))) {
-                    ReceivedDataItemListener receivedDataItemListener = new MainActivity();
-                    receivedDataItemListener.processDataMap(dataMap);
-                    Log.d("WEARABLE SERVICE", "data received");
-
-                    //Broadcast message
+                    //Broadcast data to receivers
                     Intent dataItemIntent = new Intent();
                     dataItemIntent.setAction(Intent.ACTION_SEND);
                     dataItemIntent.putExtras(dataMap.toBundle());
@@ -42,9 +37,5 @@ public class WeatherDataListenerService extends WearableListenerService{
                 }
             }
         }
-    }
-
-    public interface ReceivedDataItemListener{
-        void processDataMap(DataMap dataMap);
     }
 }

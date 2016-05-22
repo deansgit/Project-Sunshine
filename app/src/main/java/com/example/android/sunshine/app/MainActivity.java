@@ -15,16 +15,11 @@
  */
 package com.example.android.sunshine.app;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
@@ -40,20 +35,13 @@ import com.example.android.sunshine.app.gcm.RegistrationIntentService;
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.wearable.Asset;
-import com.google.android.gms.wearable.DataApi;
-import com.google.android.gms.wearable.PutDataMapRequest;
-import com.google.android.gms.wearable.PutDataRequest;
-import com.google.android.gms.wearable.Wearable;
-
-import java.io.ByteArrayOutputStream;
 
 public class MainActivity extends AppCompatActivity implements
-        ForecastFragment.Callback,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        ForecastFragment.Callback
+//        ,
+//        GoogleApiClient.ConnectionCallbacks,
+//        GoogleApiClient.OnConnectionFailedListener
+{
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
@@ -63,30 +51,28 @@ public class MainActivity extends AppCompatActivity implements
     private boolean mTwoPane;
     private String mLocation;
 
-    private static final String WEAR_DATE_KEY = "date";
-    private static final String WEAR_HIGH_TEMP_KEY = "high";
-    private static final String WEAR_LOW_TEMP_KEY = "low";
-    private static final String WEAR_WEATHER_IMAGE_KEY = "weather_image";
-    GoogleApiClient mGoogleApiClient;
-
-
-    long mDateTime = 200;
-    double mHigh = 200;
-    double mLow = 200;
-    int mWeatherId = 200;
+//    private static final String WEAR_DATE_KEY = "date";
+//    private static final String WEAR_HIGH_TEMP_KEY = "high";
+//    private static final String WEAR_LOW_TEMP_KEY = "low";
+//    private static final String WEAR_WEATHER_IMAGE_KEY = "weather_image";
+//    GoogleApiClient mGoogleApiClient;
+//    long mDateTime = 200;
+//    double mHigh = 200;
+//    double mLow = 200;
+//    int mWeatherId = 200;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mLocation = Utility.getPreferredLocation(this);
         Uri contentUri = getIntent() != null ? getIntent().getData() : null;
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-        mGoogleApiClient.connect();
+//
+//        mGoogleApiClient = new GoogleApiClient.Builder(this)
+//                .addApi(Wearable.API)
+//                .addConnectionCallbacks(this)
+//                .addOnConnectionFailedListener(this)
+//                .build();
+//        mGoogleApiClient.connect();
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -97,7 +83,8 @@ public class MainActivity extends AppCompatActivity implements
         toolbar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendWeatherToWearable(getApplicationContext());
+//                sendWeatherToWearable(getApplicationContext());
+                SunshineSyncAdapter.syncImmediately(getApplicationContext());
             }
         });
 
@@ -242,55 +229,55 @@ public class MainActivity extends AppCompatActivity implements
         return true;
     }
 
-    /**
-     * Kicks off the Data Item delivery. Runs during onPerformSync (via getWeatherDataFromJSON)
-     */
-    private void sendWeatherToWearable(Context context) {
-        Bitmap weatherImage = BitmapFactory
-                .decodeResource(context.getResources(),
-                        Utility.getArtResourceForWeatherCondition(mWeatherId));
-        Asset weatherImgAsset = createAssetFromBitmap(weatherImage);
-        PutDataMapRequest putDataMapRequest = PutDataMapRequest
-                .create(context.getString(R.string.weather_data_path));
-        putDataMapRequest.getDataMap().putLong(WEAR_DATE_KEY, mDateTime);
-        putDataMapRequest.getDataMap().putDouble(WEAR_HIGH_TEMP_KEY, mHigh);
-        putDataMapRequest.getDataMap().putDouble(WEAR_LOW_TEMP_KEY, mLow);
-        putDataMapRequest.getDataMap().putAsset(WEAR_WEATHER_IMAGE_KEY, weatherImgAsset);
-        //add this to ensure data map always changes
-        putDataMapRequest.getDataMap().putLong("CURRENT_TIME_MILLIS", System.currentTimeMillis());
-
-        PutDataRequest request = putDataMapRequest.asPutDataRequest();
-        Wearable.DataApi.putDataItem(mGoogleApiClient, request)
-                .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
-                    @Override
-                    public void onResult(@NonNull DataApi.DataItemResult dataItemResult) {
-                        if (!dataItemResult.getStatus().isSuccess()){
-                            Log.e("WEARABLE DATAITEM", "failed to send data");
-                        }else{
-                            Log.d("WEARABLE DATAITEM", "data item stored and ready to go out");
-                        }
-                    }
-                });
-    }
-
-    private static Asset createAssetFromBitmap(Bitmap bitmap) {
-        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-        return Asset.createFromBytes(byteStream.toByteArray());
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
+//    /**
+//     * Kicks off the Data Item delivery. Runs during onPerformSync (via getWeatherDataFromJSON)
+//     */
+//    private void sendWeatherToWearable(Context context) {
+//        Bitmap weatherImage = BitmapFactory
+//                .decodeResource(context.getResources(),
+//                        Utility.getArtResourceForWeatherCondition(mWeatherId));
+//        Asset weatherImgAsset = createAssetFromBitmap(weatherImage);
+//        PutDataMapRequest putDataMapRequest = PutDataMapRequest
+//                .create(context.getString(R.string.weather_data_path));
+//        putDataMapRequest.getDataMap().putLong(WEAR_DATE_KEY, mDateTime);
+//        putDataMapRequest.getDataMap().putDouble(WEAR_HIGH_TEMP_KEY, mHigh);
+//        putDataMapRequest.getDataMap().putDouble(WEAR_LOW_TEMP_KEY, mLow);
+//        putDataMapRequest.getDataMap().putAsset(WEAR_WEATHER_IMAGE_KEY, weatherImgAsset);
+//        //add this to ensure data map always changes
+//        putDataMapRequest.getDataMap().putLong("CURRENT_TIME_MILLIS", System.currentTimeMillis());
+//
+//        PutDataRequest request = putDataMapRequest.asPutDataRequest();
+//        Wearable.DataApi.putDataItem(mGoogleApiClient, request)
+//                .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+//                    @Override
+//                    public void onResult(@NonNull DataApi.DataItemResult dataItemResult) {
+//                        if (!dataItemResult.getStatus().isSuccess()){
+//                            Log.e("WEARABLE DATAITEM", "failed to send data");
+//                        }else{
+//                            Log.d("WEARABLE DATAITEM", "data item stored and ready to go out");
+//                        }
+//                    }
+//                });
+//    }
+//
+//    private static Asset createAssetFromBitmap(Bitmap bitmap) {
+//        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+//        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
+//        return Asset.createFromBytes(byteStream.toByteArray());
+//    }
+//
+//    @Override
+//    public void onConnected(@Nullable Bundle bundle) {
+//
+//    }
+//
+//    @Override
+//    public void onConnectionSuspended(int i) {
+//
+//    }
+//
+//    @Override
+//    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+//
+//    }
 }

@@ -15,13 +15,11 @@ import android.widget.TextView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.Asset;
-import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.Wearable;
 
 public class MainActivity extends Activity implements
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        WeatherDataListenerService.ReceivedDataItemListener {
+        GoogleApiClient.OnConnectionFailedListener{
 
     private static final String LOG_TAG = "WEARABLE ACTIVITY";
     private TextView mTextView;
@@ -32,25 +30,10 @@ public class MainActivity extends Activity implements
     private static final String WEAR_LOW_TEMP_KEY = "low";
     private static final String WEAR_WEATHER_IMAGE_KEY = "weather_image";
 
-    DataMap mDataMap;
     long mDate;
     double mHigh;
     double mLow;
     Asset mWeatherImage;
-
-    @Override
-    public void processDataMap(DataMap dataMap) {
-//        this.mDataMap = dataMap;
-//        Log.d(LOG_TAG, "processDataMap called");
-//        Log.d(LOG_TAG, String.valueOf(dataMap));
-//        mDate = mDataMap.getLong(WEAR_DATE_KEY);
-//        mHigh = mDataMap.getDouble(WEAR_HIGH_TEMP_KEY);
-//        mLow = mDataMap.getDouble(WEAR_LOW_TEMP_KEY);
-//        mWeatherImage = mDataMap.getAsset(WEAR_WEATHER_IMAGE_KEY);
-//
-//        updateViews(dataMap);
-//        Log.d(LOG_TAG, "updateViews called!!");
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,14 +97,6 @@ public class MainActivity extends Activity implements
             String dateString = String.valueOf(mDate);
             mTextView.setText(dateString);
         }
-    };
-
-//    public void updateViews(DataMap dataMap) {
-//        if (mTextView != null) {
-//            Log.d(LOG_TAG, "mTextView is not null!!");
-//        } else {
-//            Log.d(LOG_TAG, "Still null. WHY");
-//        }
-//    }
+    }
 
 }
