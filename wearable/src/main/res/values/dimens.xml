@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="analog_hand_stroke">3dp</dimen>
-    <dimen name="digital_text_size">40dp</dimen>
-    <dimen name="digital_text_size_round">45dp</dimen>
-    <dimen name="digital_x_offset">15dp</dimen>
-    <dimen name="digital_x_offset_round">25dp</dimen>
-    <dimen name="digital_y_offset">90dp</dimen>
+    <dimen name="digital_watch_text_size">40dp</dimen>
+    <dimen name="digital_watch_y_offset">62dp</dimen>
+    <dimen name="digital_text_size_round">28dp</dimen>
+
+    <dimen name="date_text_size">20dp</dimen>
+    <dimen name="temp_text_size">28dp</dimen>
+
+    <dimen name="date_y_offset">88dp</dimen>
+    <dimen name="digital_x_offset">4dp</dimen>
+    <dimen name="digital_x_offset_round">8dp</dimen>
+    <dimen name="digital_y_offset">24dp</dimen>
+
     <dimen name="page_row_margin">100dp</dimen>
     <dimen name="page_column_margin_round">50dp</dimen>
     <dimen name="page_column_margin">10dp</dimen>
