@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -31,19 +32,17 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.DataApi;
-import com.google.android.gms.wearable.DataEvent;
-import com.google.android.gms.wearable.DataEventBuffer;
-import com.google.android.gms.wearable.DataMap;
-import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.Wearable;
 
 import java.lang.ref.WeakReference;
 import java.util.TimeZone;
@@ -93,9 +92,20 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
         }
     }
 
-    private class Engine extends CanvasWatchFaceService.Engine implements DataApi.DataListener,
+    private class Engine extends CanvasWatchFaceService.Engine implements
             GoogleApiClient.ConnectionCallbacks,
             GoogleApiClient.OnConnectionFailedListener {
+        private static final String LOG_TAG = "CANVASWATCHFACE";
+
+        /**
+         * Not entirely sure why this needs to be declared here... scope?
+         */
+        GoogleApiClient mGoogleApiClient =
+                new GoogleApiClient.Builder(DigitalWatchFace.this).addApi(Wearable.API)
+                        .addConnectionCallbacks(this)
+                        .addOnConnectionFailedListener(this)
+                        .build();
+
         final Handler mUpdateTimeHandler = new EngineHandler(this);
         boolean mRegisteredTimeZoneReceiver = false;
 
@@ -146,6 +156,7 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
         String mHighTemp;
         String mLowTemp;
         int mWeatherId;
+        Bitmap mWeatherIcon;
 
         @Override
         public void onCreate(SurfaceHolder holder) {
@@ -157,6 +168,11 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
                     .setShowSystemUiTime(false)
                     .setAcceptsTapEvents(true)
                     .build());
+
+            IntentFilter dataItemFilter = new IntentFilter(Intent.ACTION_SEND);
+            DataItemBroadcastReceiver dataItemBroadcastReceiver = new DataItemBroadcastReceiver();
+            LocalBroadcastManager.getInstance(DigitalWatchFace.this).registerReceiver(dataItemBroadcastReceiver, dataItemFilter);
+
             Resources resources = DigitalWatchFace.this.getResources();
             mYOffset = resources.getDimension(R.dimen.digital_y_offset);
 
@@ -244,6 +260,9 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
                     ? R.dimen.digital_text_size_round : R.dimen.digital_text_size);
 
             mTimePaint.setTextSize(textSize);
+            mDatePaint.setTextSize(textSize);
+            mHighTempPaint.setTextSize(textSize);
+            mLowTempPaint.setTextSize(textSize);
         }
 
         @Override
@@ -261,6 +280,7 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
         @Override
         public void onAmbientModeChanged(boolean inAmbientMode) {
             super.onAmbientModeChanged(inAmbientMode);
+            Log.d(LOG_TAG, String.valueOf(inAmbientMode));
             if (mAmbient != inAmbientMode) {
                 mAmbient = inAmbientMode;
                 if (mLowBitAmbient) {
@@ -269,6 +289,7 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
                 invalidate();
             }
 
+//            TODO make all paints not do anti-aliasing
             // Whether the timer should be running depends on whether we're visible (as well as
             // whether we're in ambient mode), so we may need to start or stop the timer.
             updateTimer();
@@ -317,9 +338,9 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             // draw things underneath clock
             if (mDateString != null) {
                 canvas.drawText(mDateString, mXOffset, mYOffset * 2, mDatePaint);
-                canvas.drawText(mHighTemp, mXOffset, mYOffset * 3, mHighTempPaint);
-                canvas.drawText(mLowTemp, mXOffset, mYOffset * 4, mLowTempPaint);
-            }else{
+                canvas.drawText(mHighTemp, mXOffset, mYOffset * 2, mHighTempPaint);
+                canvas.drawText(mLowTemp, mXOffset, mYOffset * 2, mLowTempPaint);
+            } else {
                 canvas.drawText("TEST", mXOffset, mYOffset * 2, mDatePaint);
             }
 
@@ -357,30 +378,6 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             }
         }
 
-        @Override
-        public void onDataChanged(DataEventBuffer dataEventBuffer) {
-//        Log.d(LOG_TAG, "onDataChanged called");
-            for (DataEvent dataEvent : dataEventBuffer) {
-                if (dataEvent.getType() == DataEvent.TYPE_CHANGED) {
-                    DataMap dataMap = DataMapItem.fromDataItem(
-                            dataEvent.getDataItem()).getDataMap();
-                    String path = dataEvent.getDataItem().getUri().getPath();
-                    if (path.equals(getString(R.string.weather_data_path))) {
-                        String dateString = dataMap.getString(WEAR_DATE_STRING_KEY);
-                        String highTemp = dataMap.getString(WEAR_HIGH_TEMP_KEY);
-                        String lowTemp = dataMap.getString(WEAR_LOW_TEMP_KEY);
-                        int weatherId = dataMap.getInt(WEAR_WEATHER_IMAGE_KEY);
-//                        //Broadcast data to receivers
-//                        Intent dataItemIntent = new Intent();
-//                        dataItemIntent.setAction(Intent.ACTION_SEND);
-//                        dataItemIntent.putExtras(dataMap.toBundle());
-//                        LocalBroadcastManager.getInstance(this).sendBroadcast(dataItemIntent);
-                        updateUIElements(dateString, highTemp, lowTemp, weatherId);
-                    }
-                }
-            }
-        }
-
         private void updateUIElements(String dateString, String highTemp, String lowTemp, int weatherId) {
             mDateString = dateString;
             mHighTemp = highTemp;
@@ -391,17 +388,32 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onConnected(@Nullable Bundle bundle) {
-
+            Log.d(LOG_TAG, "onConnected called");
+//            Wearable.DataApi.addListener(mGoogleApiClient, Engine.this);
         }
 
         @Override
         public void onConnectionSuspended(int i) {
-
+            Log.d(LOG_TAG, "onConnectionSuspended called");
         }
 
         @Override
         public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+            Log.d(LOG_TAG, "onConnectionFailed called");
+        }
 
+        public class DataItemBroadcastReceiver extends BroadcastReceiver {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(LOG_TAG, "RECEIVED!!)");
+                Bundle bundle = intent.getExtras();
+                String dateString = bundle.getString(WEAR_DATE_STRING_KEY);
+                String highTemp = bundle.getString(WEAR_HIGH_TEMP_KEY);
+                String lowTemp = bundle.getString(WEAR_LOW_TEMP_KEY);
+                int weatherId = bundle.getInt(WEAR_WEATHER_IMAGE_KEY);
+                int weatherResourceId = WearUtility.getIconResourceForWeatherCondition(weatherId);
+                updateUIElements(dateString, highTemp, lowTemp, weatherId);
+            }
         }
     }
 }
